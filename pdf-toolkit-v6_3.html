@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Toolkit</title>
+<!-- Pinned versions with SRI (Subresource Integrity) verification -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   PDF TOOLKIT v6 — Production Build
+   Camper × Claude Design System
+   ═══════════════════════════════════════ */
+:root {
+  --white: #FFFFFF;
+  --cream: #F9F6F2;
+  --warm-50: #F3EFEB;
+  --warm-100: #E8E2DA;
+  --warm-200: #D1C9BF;
+  --warm-300: #AEA49A;
+  --warm-400: #8A8078;
+  --gray-600: #524C46;
+  --gray-800: #322D28;
+  --black: #1B1816;
+  --red: #D63B30;
+  --red-h: #C0322A;
+  --red-soft: #FDF0EF;
+  --red-t: rgba(214,59,48,0.06);
+  --green: #2D8F5F;
+  --green-soft: #EDF7F1;
+  --font: 'Sora', system-ui, sans-serif;
+  --r: 10px;
+  --sh: 0 1px 3px rgba(27,24,22,0.05);
+  --sh-m: 0 4px 16px rgba(27,24,22,0.08);
+  --sh-l: 0 8px 30px rgba(27,24,22,0.12);
+  --t: 150ms ease;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--black);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--warm-200); border-radius: 3px; }
+input[type=file] { display: none; }
+
+/* ═══ HEADER ═══ */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--warm-100);
+  position: sticky; top: 0; z-index: 100;
+}
+.hdr {
+  max-width: 980px; margin: 0 auto; padding: 0 24px;
+  height: 54px; display: flex; align-items: center; gap: 24px;
+}
+.logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.logo-icon {
+  width: 28px; height: 28px; background: var(--red); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 9px; letter-spacing: -0.3px;
+}
+.logo-text { font-size: 14px; font-weight: 700; letter-spacing: -0.4px; }
+
+nav { display: flex; gap: 1px; }
+nav button {
+  padding: 6px 13px; border-radius: 8px; border: none; background: transparent;
+  color: var(--warm-400); font-family: var(--font); font-size: 12.5px;
+  font-weight: 600; cursor: pointer; transition: all var(--t); white-space: nowrap;
+}
+nav button:hover { background: var(--warm-50); color: var(--black); }
+nav button.on { background: var(--red-t); color: var(--red); }
+
+.hdr-badge {
+  margin-left: auto; font-size: 10px; color: var(--warm-300);
+  letter-spacing: 0.2px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+
+/* ═══ LAYOUT ═══ */
+.shell { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+.page { padding: 32px 0 56px; }
+.page-h { margin-bottom: 24px; }
+.page-h h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 2px; }
+.page-h p { font-size: 13.5px; color: var(--warm-400); }
+
+/* ═══ DEPENDENCY ERROR ═══ */
+.dep-error {
+  max-width: 500px; margin: 80px auto; text-align: center;
+  padding: 40px 24px; background: var(--white); border-radius: 14px;
+  border: 1px solid var(--warm-100); box-shadow: var(--sh-l);
+}
+.dep-error h2 { font-size: 18px; margin-bottom: 8px; color: var(--red); }
+.dep-error p { font-size: 13px; color: var(--warm-400); }
+
+/* ═══ DROP ZONE ═══ */
+.drop-zone {
+  border: 2px dashed var(--warm-200); border-radius: 14px;
+  padding: 44px 24px; text-align: center; cursor: pointer;
+  transition: all var(--t); background: var(--white);
+}
+.drop-zone:hover, .drop-zone.drag { border-color: var(--red); background: var(--red-t); }
+.drop-zone-icon {
+  width: 44px; height: 44px; background: var(--red-soft); border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin: 0 auto 10px;
+}
+.drop-zone h3 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.drop-zone p { font-size: 12px; color: var(--warm-300); }
+
+/* ═══ CARD ═══ */
+.card { background: var(--white); border: 1px solid var(--warm-100); border-radius: var(--r); box-shadow: var(--sh); }
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px; font-family: var(--font);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--t);
+  border: 1px solid transparent; white-space: nowrap;
+}
+.btn-red { background: var(--red); color: #fff; }
+.btn-red:hover { background: var(--red-h); box-shadow: 0 2px 8px rgba(214,59,48,0.2); }
+.btn-red:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+.btn-out { background: var(--white); color: var(--black); border-color: var(--warm-200); }
+.btn-out:hover { border-color: var(--warm-300); background: var(--warm-50); }
+.btn-out:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-ghost { background: transparent; border: none; color: var(--warm-400); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-family: var(--font); font-size: 11.5px; font-weight: 500; }
+.btn-ghost:hover { background: var(--warm-50); color: var(--black); }
+.btn-icon {
+  width: 28px; height: 28px; border: none; background: transparent; color: var(--warm-300);
+  border-radius: 6px; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; transition: all var(--t);
+}
+.btn-icon:hover { background: var(--red-soft); color: var(--red); }
+.btn-sq {
+  width: 28px; height: 28px; padding: 0; border-radius: 6px;
+  background: var(--white); border: 1px solid var(--warm-200); color: var(--warm-400);
+  font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--t);
+}
+.btn-sq:hover { border-color: var(--warm-300); color: var(--black); }
+.btn-sq:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ═══ INPUT ═══ */
+.inp {
+  background: var(--white); border: 1px solid var(--warm-200); border-radius: 7px;
+  padding: 7px 10px; color: var(--black); font-family: var(--font); font-size: 13px;
+  outline: none; transition: all var(--t); width: 100%;
+}
+.inp:focus { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-t); }
+.inp::placeholder { color: var(--warm-300); }
+
+/* ═══ FILE LIST ═══ */
+.flist { margin-top: 14px; display: flex; flex-direction: column; gap: 3px; }
+.fitem {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: var(--r); background: var(--white); border: 1px solid var(--warm-100);
+  transition: all var(--t); user-select: none;
+}
+.fitem:hover { border-color: var(--warm-200); box-shadow: var(--sh); }
+.fitem-icon {
+  width: 32px; height: 32px; background: var(--red-soft); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--red); flex-shrink: 0;
+}
+.fitem-body { flex: 1; min-width: 0; }
+.fitem-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fitem-meta { font-size: 11px; color: var(--warm-300); margin-top: 1px; display: flex; gap: 8px; }
+.fitem-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
+/* ═══ BOTTOM BAR ═══ */
+.bottom-bar {
+  display: flex; align-items: center; gap: 10px; margin-top: 14px;
+  padding: 11px 14px; border-radius: var(--r); background: var(--white);
+  border: 1px solid var(--warm-100); box-shadow: var(--sh);
+}
+.bottom-bar-info { font-size: 12.5px; color: var(--warm-400); margin-right: auto; }
+.bottom-bar-info strong { color: var(--black); }
+
+/* ═══ PROGRESS ═══ */
+.progress { margin-top: 12px; padding: 12px 14px; border-radius: var(--r); background: var(--white); border: 1px solid var(--warm-100); }
+.progress-label { font-size: 12px; color: var(--warm-400); margin-bottom: 6px; }
+.progress-track { height: 3px; background: var(--warm-100); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.3s ease; width: 0%; }
+
+/* ═══ TOAST ═══ */
+.toast-container { position: fixed; bottom: 14px; right: 14px; z-index: 10000; display: flex; flex-direction: column; gap: 5px; }
+.toast {
+  padding: 9px 14px; background: var(--white); border: 1px solid var(--warm-100);
+  border-radius: var(--r); box-shadow: var(--sh-l); font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 7px; animation: toast-in 0.2s ease;
+}
+.toast-ok { border-left: 3px solid var(--green); }
+.toast-err { border-left: 3px solid var(--red); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══ LOADING OVERLAY ═══ */
+.loading {
+  position: absolute; inset: 0; z-index: 20;
+  background: rgba(249,246,242,0.85);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--warm-400); font-weight: 500;
+}
+.loading::before {
+  content: ''; width: 18px; height: 18px; border: 2px solid var(--warm-200);
+  border-top-color: var(--red); border-radius: 50%; margin-right: 8px;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══ INLINE EDITOR ═══ */
+.inline-edit {
+  position: absolute; z-index: 10;
+  display: none;
+}
+.inline-edit.active { display: block; }
+.inline-input {
+  background: transparent; border: none; outline: none;
+  color: transparent; font-family: Arial, Helvetica, sans-serif;
+  padding: 0; margin: 0; width: 100%; min-width: 60px;
+  caret-color: var(--red);
+}
+.inline-input::placeholder { color: rgba(214,59,48,0.3); }
+.inline-actions {
+  position: absolute; top: -30px; left: 0;
+  display: flex; gap: 3px; background: var(--white);
+  border: 1px solid var(--warm-200); border-radius: 6px;
+  padding: 2px; box-shadow: var(--sh-m); white-space: nowrap;
+}
+.inline-actions button {
+  width: 24px; height: 24px; border: none; border-radius: 4px;
+  cursor: pointer; font-size: 12px; display: flex;
+  align-items: center; justify-content: center; transition: all var(--t);
+}
+.inline-actions .ia-ok { background: var(--green-soft); color: var(--green); }
+.inline-actions .ia-ok:hover { background: var(--green); color: #fff; }
+.inline-actions .ia-no { background: var(--warm-50); color: var(--warm-400); }
+.inline-actions .ia-no:hover { background: var(--red-soft); color: var(--red); }
+
+/* ═══ SPLIT CONFIG ═══ */
+.split-config { margin-top: 14px; padding: 16px; }
+.split-modes { display: flex; gap: 3px; margin-bottom: 12px; }
+.split-mode {
+  flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  text-align: center; cursor: pointer; font-family: var(--font);
+  background: var(--white); border: 1px solid var(--warm-200); color: var(--warm-400);
+  transition: all var(--t);
+}
+.split-mode.on { background: var(--red-t); border-color: rgba(214,59,48,0.15); color: var(--red); }
+.split-mode:hover:not(.on) { border-color: var(--warm-300); }
+
+.pages-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 3px; margin-top: 8px; max-height: 200px; overflow-y: auto;
+}
+.page-chip {
+  padding: 6px; background: var(--white); border: 2px solid var(--warm-100);
+  border-radius: 7px; text-align: center; cursor: pointer; font-size: 12px;
+  font-weight: 600; color: var(--warm-400); transition: all var(--t); user-select: none;
+}
+.page-chip:hover { border-color: var(--warm-200); }
+.page-chip.sel { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+
+/* ═══ RENAME ═══ */
+.rename-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-bottom: 1px solid var(--warm-100);
+}
+.rename-item:last-child { border-bottom: none; }
+.rename-orig { font-size: 10.5px; color: var(--warm-300); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rename-wrap { flex: 1; min-width: 0; }
+.rename-row { display: flex; align-items: center; gap: 4px; }
+.rename-ext { font-size: 12px; color: var(--warm-300); flex-shrink: 0; }
+
+/* ═══ EDITOR ═══ */
+.editor-grid { display: grid; grid-template-columns: 1fr 260px; gap: 14px; margin-top: 14px; }
+.editor-main { border-radius: var(--r); border: 1px solid var(--warm-100); background: var(--white); overflow: hidden; box-shadow: var(--sh); }
+.editor-toolbar {
+  display: flex; align-items: center; gap: 4px; padding: 7px 10px;
+  background: var(--white); border-bottom: 1px solid var(--warm-100); flex-wrap: wrap;
+}
+.editor-toolbar .sep { width: 1px; height: 16px; background: var(--warm-100); margin: 0 2px; }
+
+.tool-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600;
+  background: var(--white); border: 1px solid var(--warm-200); color: var(--warm-400);
+  cursor: pointer; font-family: var(--font); transition: all var(--t);
+}
+.tool-btn.on { background: var(--red-t); border-color: rgba(214,59,48,0.15); color: var(--red); }
+.tool-btn:hover:not(.on) { border-color: var(--warm-300); }
+
+.editor-hint {
+  width: 100%; padding: 5px 10px; margin-top: 1px;
+  background: var(--warm-50); border-radius: 5px;
+  font-size: 11px; color: var(--warm-400); text-align: center;
+}
+
+.editor-viewport {
+  position: relative; overflow: auto; max-height: 65vh;
+  background: var(--warm-50); display: flex; justify-content: center;
+  align-items: flex-start; padding: 16px;
+}
+.editor-canvas-wrap { position: relative; display: inline-block; line-height: 0; }
+.editor-canvas-wrap canvas { display: block; }
+#ed-ov { position: absolute; top: 0; left: 0; z-index: 2; }
+
+.editor-side { display: flex; flex-direction: column; gap: 10px; }
+.side-card { padding: 12px; }
+
+.edit-item {
+  padding: 7px 9px; background: var(--warm-50); border-radius: 7px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.edit-item-header { display: flex; align-items: center; justify-content: space-between; }
+.edit-item-type { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--warm-300); }
+.edit-item-value { font-size: 12px; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.form-field { padding: 7px 9px; background: var(--warm-50); border-radius: 7px; }
+.form-field label { font-size: 10px; color: var(--warm-300); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 3px; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .hdr { gap: 8px; padding: 0 12px; }
+  nav button { padding: 5px 8px; font-size: 11px; }
+  .hdr-badge { display: none; }
+  .shell { padding: 0 12px; }
+  .page-h h1 { font-size: 18px; }
+  .editor-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ DEPENDENCY CHECK — shown only if libs fail ═══ -->
+<div class="dep-error" id="dep-error" style="display:none">
+  <h2>⚠️ Error de carga</h2>
+  <p id="dep-error-msg">Las librerías necesarias no se pudieron cargar. Comprueba tu conexión a internet y recarga la página.</p>
+</div>
+
+<!-- ═══ APP (hidden until deps verified) ═══ -->
+<div id="app">
+
+<header>
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-icon">PDF</div>
+      <span class="logo-text">PDF Toolkit</span>
+    </div>
+    <nav>
+      <button class="on" data-t="ed" onclick="go('ed')">✏️ Editor</button>
+      <button data-t="mg" onclick="go('mg')">📎 Unir</button>
+      <button data-t="sp" onclick="go('sp')">✂️ Dividir</button>
+      <button data-t="rn" onclick="go('rn')">📝 Renombrar</button>
+    </nav>
+    <div class="hdr-badge">🔒 100% local · nada sale del navegador</div>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- ─── EDITOR ─── -->
+<div id="tab-ed" class="tab page">
+  <div class="page-h">
+    <h1>Editor de PDF</h1>
+    <p>Tapa texto, escribe encima o añade texto nuevo. También rellena formularios.</p>
+  </div>
+  <div id="ed-drop">
+    <div class="drop-zone" onclick="$('ed-inp').click()">
+      <div class="drop-zone-icon">📄</div>
+      <h3>Arrastra un PDF aquí o haz clic para seleccionar</h3>
+      <p>Se procesa todo en tu navegador — nada se sube a ningún servidor</p>
+    </div>
+    <input type="file" id="ed-inp" accept=".pdf">
+  </div>
+  <div id="ed-work" style="display:none">
+    <div class="editor-grid">
+      <div class="editor-main">
+        <div class="editor-toolbar">
+          <button class="tool-btn on" data-t="cover" onclick="edSetTool('cover')">🔲 Tapar</button>
+          <button class="tool-btn" data-t="text" onclick="edSetTool('text')">📝 Texto</button>
+          <div class="sep"></div>
+          <label style="font-size:11px;color:var(--warm-400)">Pt:</label>
+          <input class="inp" id="ed-fontsize" type="number" value="12" min="6" max="72" style="width:48px;padding:3px 6px;font-size:11px;text-align:center">
+          <div class="sep"></div>
+          <div style="display:flex;align-items:center;gap:3px">
+            <button class="btn-sq" id="ed-prev" onclick="edPage(-1)">◀</button>
+            <span style="font-size:11px;color:var(--warm-400);min-width:44px;text-align:center" id="ed-pager">1 / 1</span>
+            <button class="btn-sq" id="ed-next" onclick="edPage(1)">▶</button>
+          </div>
+          <div class="editor-hint" id="ed-hint">🔲 Arrastra un rectángulo sobre el texto que quieras tapar</div>
+        </div>
+        <div class="editor-viewport" id="ed-viewport">
+          <div class="editor-canvas-wrap" id="ed-wrap">
+            <canvas id="ed-cv"></canvas>
+            <canvas id="ed-ov"></canvas>
+            <div class="inline-edit" id="ed-inline">
+              <div class="inline-actions">
+                <button class="ia-ok" onclick="edInlineConfirm()" title="Aplicar (Enter)">✓</button>
+                <button class="ia-no" onclick="edInlineCancel()" title="Cancelar (Esc)">✕</button>
+              </div>
+              <input class="inline-input" id="ed-inline-input" type="text" placeholder="Escribe aquí...">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="editor-side">
+        <div class="card side-card">
+          <div style="font-size:13px;font-weight:600" id="ed-filename">—</div>
+          <div style="font-size:11px;color:var(--warm-300);margin-top:1px" id="ed-fileinfo">—</div>
+        </div>
+        <div class="card side-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:600">Ediciones <span style="color:var(--warm-300);font-weight:400;font-size:11px" id="ed-count">(0)</span></span>
+            <button class="btn-ghost" id="ed-undo-btn" onclick="edUndo()" style="display:none" title="Deshacer (Ctrl+Z)">↩ Deshacer</button>
+          </div>
+          <div id="ed-edits-list" style="display:flex;flex-direction:column;gap:5px">
+            <p style="font-size:12px;color:var(--warm-300);text-align:center;padding:8px 0">Aún sin ediciones</p>
+          </div>
+        </div>
+        <div class="card side-card" id="ed-forms-panel" style="display:none">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Campos de formulario</div>
+          <div id="ed-forms-list" style="display:flex;flex-direction:column;gap:5px"></div>
+        </div>
+        <button class="btn btn-red" id="btn-ed-save" onclick="edSave()" style="width:100%">💾 Guardar PDF editado</button>
+        <button class="btn btn-out" onclick="edClose()" style="width:100%">Cerrar documento</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MERGE ─── -->
+<div id="tab-mg" class="tab page" style="display:none">
+  <div class="page-h">
+    <h1>Unir PDFs</h1>
+    <p>Combina varios archivos en un solo PDF. Arrastra para reordenar.</p>
+  </div>
+  <div class="drop-zone" id="mg-drop" onclick="$('mg-inp').click()">
+    <div class="drop-zone-icon">📎</div>
+    <h3>Arrastra tus PDFs aquí o haz clic para seleccionar</h3>
+    <p>Sin límite de archivos</p>
+  </div>
+  <input type="file" id="mg-inp" accept=".pdf" multiple>
+  <div id="mg-list" class="flist"></div>
+  <div id="mg-bar" class="bottom-bar" style="display:none">
+    <div class="bottom-bar-info"><strong id="mg-count">0</strong> archivos</div>
+    <button class="btn btn-out" onclick="mgClear()">Limpiar</button>
+    <button class="btn btn-red" id="btn-mg-merge" onclick="mgMerge()">🔗 Unir PDFs</button>
+  </div>
+  <div id="mg-progress" class="progress" style="display:none">
+    <div class="progress-label" id="mg-prog-label">—</div>
+    <div class="progress-track"><div class="progress-fill" id="mg-prog-fill"></div></div>
+  </div>
+</div>
+
+<!-- ─── SPLIT ─── -->
+<div id="tab-sp" class="tab page" style="display:none">
+  <div class="page-h">
+    <h1>Dividir PDF</h1>
+    <p>Extrae páginas específicas o divide un PDF en partes.</p>
+  </div>
+  <div class="drop-zone" id="sp-drop" onclick="$('sp-inp').click()">
+    <div class="drop-zone-icon">✂️</div>
+    <h3>Arrastra un PDF aquí o haz clic para seleccionar</h3>
+    <p>Selecciona el PDF que quieres dividir</p>
+  </div>
+  <input type="file" id="sp-inp" accept=".pdf">
+  <div id="sp-file-info" style="display:none"></div>
+  <div id="sp-config" class="split-config card" style="display:none">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px">Configuración</div>
+    <div class="split-modes">
+      <button class="split-mode on" data-m="pages" onclick="spSetMode('pages')">Páginas</button>
+      <button class="split-mode" data-m="range" onclick="spSetMode('range')">Rango</button>
+      <button class="split-mode" data-m="each" onclick="spSetMode('each')">Cada página</button>
+    </div>
+    <div id="sp-pages-ui">
+      <div style="display:flex;gap:3px;margin-bottom:5px">
+        <button class="btn-ghost" onclick="spSelectAll()">Todo</button>
+        <button class="btn-ghost" onclick="spSelectNone()">Ninguno</button>
+        <button class="btn-ghost" onclick="spSelectInvert()">Invertir</button>
+      </div>
+      <div class="pages-grid" id="sp-grid"></div>
+    </div>
+    <div id="sp-range-ui" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <label style="font-size:12px;color:var(--warm-400)">Desde</label>
+        <input class="inp" id="sp-from" type="number" min="1" value="1" style="max-width:70px;text-align:center">
+        <label style="font-size:12px;color:var(--warm-400)">Hasta</label>
+        <input class="inp" id="sp-to" type="number" min="1" value="1" style="max-width:70px;text-align:center">
+      </div>
+    </div>
+    <div id="sp-each-ui" style="display:none">
+      <p style="font-size:12px;color:var(--warm-400);margin-top:6px">Se generará un ZIP con un PDF por cada página.</p>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-red" id="btn-sp-split" onclick="spSplit()">✂️ Dividir</button>
+      <button class="btn btn-out" onclick="spClear()">Cancelar</button>
+    </div>
+  </div>
+  <div id="sp-progress" class="progress" style="display:none">
+    <div class="progress-label" id="sp-prog-label">—</div>
+    <div class="progress-track"><div class="progress-fill" id="sp-prog-fill"></div></div>
+  </div>
+</div>
+
+<!-- ─── RENAME ─── -->
+<div id="tab-rn" class="tab page" style="display:none">
+  <div class="page-h">
+    <h1>Renombrar PDFs</h1>
+    <p>Cambia el nombre de tus archivos y descárgalos.</p>
+  </div>
+  <div class="drop-zone" id="rn-drop" onclick="$('rn-inp').click()">
+    <div class="drop-zone-icon">📝</div>
+    <h3>Arrastra tus PDFs aquí o haz clic para seleccionar</h3>
+    <p>Renombra uno o varios archivos a la vez</p>
+  </div>
+  <input type="file" id="rn-inp" accept=".pdf" multiple>
+  <div id="rn-list" class="card" style="display:none;margin-top:14px"></div>
+  <div id="rn-bar" class="bottom-bar" style="display:none">
+    <div class="bottom-bar-info"><strong id="rn-count">0</strong> archivos</div>
+    <button class="btn btn-out" onclick="rnClear()">Limpiar</button>
+    <button class="btn btn-red" id="btn-rn-dl" onclick="rnDownload()">💾 Descargar</button>
+  </div>
+</div>
+
+</div><!-- /shell -->
+</div><!-- /app -->
+
+<div class="toast-container" id="toasts"></div>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT — Production Build
+     ═══════════════════════════════════ -->
+<script>
+'use strict';
+
+// ══════════════════════════════════════
+// FIX #5: Library verification
+// ══════════════════════════════════════
+{
+  const missing = [];
+  if (typeof PDFLib === 'undefined') missing.push('pdf-lib');
+  if (typeof pdfjsLib === 'undefined') missing.push('PDF.js');
+  if (typeof JSZip === 'undefined') missing.push('JSZip');
+  if (missing.length) {
+    document.getElementById('dep-error').style.display = 'block';
+    document.getElementById('dep-error-msg').textContent =
+      `No se pudieron cargar: ${missing.join(', ')}. Comprueba tu conexión y recarga.`;
+    document.getElementById('app').style.display = 'none';
+    throw new Error('Missing dependencies: ' + missing.join(', '));
+  }
+}
+
+// ══════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════
+const $ = id => document.getElementById(id);
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// Worker SRI (for reference, cannot be enforced via HTML): sha384-SnzOobpRMLXZ52iJvZm/C0fYw0OQemTXzTjIsdsfMcrCtCEe9qgzxTd3RSklO5x2
+
+// FIX #1: XSS sanitization — every filename goes through this before innerHTML
+function esc(str) {
+  const el = document.createElement('span');
+  el.textContent = str;
+  return el.innerHTML;
+}
+
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+  el.textContent = msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3500);
+}
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    r.readAsArrayBuffer(file);
+  });
+}
+
+// FIX #4: Double-click protection — wraps any async button handler
+function guardBtn(btnId, asyncFn) {
+  return async function() {
+    const btn = $(btnId);
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    try { await asyncFn(); }
+    finally { btn.disabled = false; }
+  };
+}
+
+// FIX #3: Track unsaved state for beforeunload
+let _hasUnsavedWork = false;
+function markDirty() { _hasUnsavedWork = true; }
+function markClean() { _hasUnsavedWork = false; }
+window.addEventListener('beforeunload', e => {
+  if (_hasUnsavedWork) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ── Navigation ──
+function go(tab) {
+  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
+  $('tab-' + tab).style.display = 'block';
+  document.querySelector(`nav button[data-t="${tab}"]`).classList.add('on');
+}
+
+// ── Drop zone helper ──
+function setupDropZone(dropId, inputId, handler, multi = true) {
+  const dz = $(dropId), inp = $(inputId);
+  if (!dz || !inp) return;
+  ['dragenter', 'dragover'].forEach(evt =>
+    dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('drag'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.remove('drag'); })
+  );
+  dz.addEventListener('drop', e => {
+    const files = Array.from(e.dataTransfer.files).filter(f =>
+      f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    );
+    if (!files.length) { toast('Solo archivos PDF', false); return; }
+    handler(multi ? files : [files[0]]);
+  });
+  inp.addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    if (files.length) handler(multi ? files : [files[0]]);
+    e.target.value = '';
+  });
+}
+
+
+// ══════════════════════════════════════
+// EDITOR — Inline WYSIWYG
+// FIX #2: Font match — canvas uses Arial/Helvetica to match embedded Helvetica
+// FIX #6: Memory cleanup — jsDoc.destroy() on close
+// ══════════════════════════════════════
+const EDIT_FONT = 'Arial, Helvetica, sans-serif'; // Matches embedded Helvetica metrics
+
+const editor = {
+  file: null, buf: null,
+  jsDoc: null, libDoc: null,
+  page: 1, totalPages: 0,
+  scale: 1.5,
+  tool: 'cover',
+  edits: [],
+  formFields: [],
+  drawing: false, startX: 0, startY: 0,
+  pending: null,
+};
+
+async function edLoad(files) {
+  const file = files[0];
+  // Show loading state
+  $('ed-drop').style.display = 'none';
+  $('ed-work').style.display = 'block';
+  $('ed-filename').textContent = 'Cargando...';
+  $('ed-fileinfo').textContent = '';
+
+  try {
+    const buf = await readFile(file);
+
+    // FIX #6: Destroy previous document if any
+    if (editor.jsDoc) { editor.jsDoc.destroy(); }
+
+    editor.file = file;
+    editor.buf = buf;
+    editor.jsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) }).promise;
+    editor.libDoc = await PDFLib.PDFDocument.load(buf.slice(0), { ignoreEncryption: true });
+    editor.page = 1;
+    editor.totalPages = editor.jsDoc.numPages;
+    editor.edits = [];
+    editor.formFields = [];
+    editor.pending = null;
+    markClean();
+
+    $('ed-filename').textContent = esc(file.name);
+    $('ed-fileinfo').textContent = `${fmtSize(buf.byteLength)} · ${editor.totalPages} página${editor.totalPages > 1 ? 's' : ''}`;
+
+    await edRenderPage();
+    edDetectForms();
+    edUpdateEditsList();
+  } catch (err) {
+    toast('Error al abrir el PDF: ' + err.message, false);
+    // Revert UI
+    $('ed-drop').style.display = 'block';
+    $('ed-work').style.display = 'none';
+  }
+}
+
+async function edRenderPage() {
+  edInlineCancel();
+  const page = await editor.jsDoc.getPage(editor.page);
+
+  // Auto-fit to viewport width
+  const rawVp = page.getViewport({ scale: 1 });
+  const container = $('ed-viewport');
+  const availableWidth = container.clientWidth - 32;
+  editor.scale = Math.min(availableWidth / rawVp.width, 2.5);
+
+  const vp = page.getViewport({ scale: editor.scale });
+  const cv = $('ed-cv'), ctx = cv.getContext('2d');
+  cv.width = vp.width; cv.height = vp.height;
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+  const ov = $('ed-ov');
+  ov.width = vp.width; ov.height = vp.height;
+  ov.style.width = cv.width + 'px';
+  ov.style.height = cv.height + 'px';
+
+  $('ed-pager').textContent = `${editor.page} / ${editor.totalPages}`;
+  $('ed-prev').disabled = editor.page <= 1;
+  $('ed-next').disabled = editor.page >= editor.totalPages;
+
+  edDrawOverlay();
+}
+
+function edDrawOverlay() {
+  const ov = $('ed-ov'), ctx = ov.getContext('2d');
+  ctx.clearRect(0, 0, ov.width, ov.height);
+  const s = editor.scale;
+
+  editor.edits.filter(e => e.page === editor.page).forEach(ed => edDrawEdit(ctx, ed, s));
+
+  // Live preview of pending edit
+  if (editor.pending && editor.pending.page === editor.page) {
+    edDrawEdit(ctx, editor.pending, s);
+  }
+}
+
+// FIX #2: Uses EDIT_FONT (Arial/Helvetica) to match what gets embedded in the PDF
+function edDrawEdit(ctx, ed, s) {
+  if (ed.type === 'cover') {
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fillRect(ed.x * s, ed.y * s, ed.w * s, ed.h * s);
+    ctx.strokeStyle = 'rgba(214,59,48,0.25)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(ed.x * s, ed.y * s, ed.w * s, ed.h * s);
+    if (ed.text) {
+      ctx.fillStyle = '#1B1816';
+      ctx.font = `${ed.fontSize * s}px ${EDIT_FONT}`;
+      ctx.fillText(ed.text, (ed.x + 3) * s, (ed.y + ed.fontSize + 2) * s);
+    }
+  } else {
+    if (!ed.text) return;
+    ctx.fillStyle = '#1B1816';
+    ctx.font = `${ed.fontSize * s}px ${EDIT_FONT}`;
+    ctx.fillText(ed.text, ed.x * s, (ed.y + ed.fontSize) * s);
+    const tw = ctx.measureText(ed.text).width;
+    ctx.strokeStyle = 'rgba(214,59,48,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(ed.x * s, (ed.y + ed.fontSize + 3) * s);
+    ctx.lineTo(ed.x * s + tw, (ed.y + ed.fontSize + 3) * s);
+    ctx.stroke();
+  }
+}
+
+// ── Canvas events ──
+function edInitCanvasEvents() {
+  const ov = $('ed-ov');
+
+  ov.addEventListener('mousedown', e => {
+    if (!editor.jsDoc || editor.pending) return;
+    e.preventDefault();
+    const rect = ov.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / editor.scale;
+    const y = (e.clientY - rect.top) / editor.scale;
+
+    if (editor.tool === 'cover') {
+      editor.drawing = true;
+      editor.startX = x;
+      editor.startY = y;
+    } else {
+      editor.pending = {
+        type: 'text', page: editor.page, x, y, w: 0, h: 0,
+        fontSize: parseInt($('ed-fontsize').value) || 12, text: ''
+      };
+      edShowInline(x, y);
+    }
+  });
+
+  ov.addEventListener('mousemove', e => {
+    if (!editor.drawing) return;
+    const rect = ov.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / editor.scale;
+    const y = (e.clientY - rect.top) / editor.scale;
+    const s = editor.scale;
+
+    edDrawOverlay();
+    const ctx = ov.getContext('2d');
+    const sx = Math.min(editor.startX, x), sy = Math.min(editor.startY, y);
+    const sw = Math.abs(x - editor.startX), sh = Math.abs(y - editor.startY);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillRect(sx * s, sy * s, sw * s, sh * s);
+    ctx.strokeStyle = 'rgba(214,59,48,0.5)';
+    ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    ctx.strokeRect(sx * s, sy * s, sw * s, sh * s);
+    ctx.setLineDash([]);
+  });
+
+  ov.addEventListener('mouseup', e => {
+    if (!editor.drawing) return;
+    editor.drawing = false;
+    const rect = ov.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / editor.scale;
+    const y = (e.clientY - rect.top) / editor.scale;
+    const sx = Math.min(editor.startX, x), sy = Math.min(editor.startY, y);
+    const sw = Math.abs(x - editor.startX), sh = Math.abs(y - editor.startY);
+
+    if (sw < 4 || sh < 4) { edDrawOverlay(); return; }
+
+    editor.pending = {
+      type: 'cover', page: editor.page, x: sx, y: sy, w: sw, h: sh,
+      fontSize: parseInt($('ed-fontsize').value) || 12, text: ''
+    };
+    edShowInline(sx, sy);
+    edDrawOverlay();
+  });
+
+  ov.addEventListener('selectstart', e => e.preventDefault());
+}
+
+// ── Inline editing ──
+function edShowInline(pdfX, pdfY) {
+  const s = editor.scale;
+  const el = $('ed-inline'), inp = $('ed-inline-input');
+  el.style.top = (pdfY * s) + 'px';
+  el.style.left = (pdfX * s) + 'px';
+
+  const fs = editor.pending.fontSize;
+  inp.style.fontSize = (fs * s) + 'px';
+  inp.style.lineHeight = (fs * s * 1.2) + 'px';
+  inp.style.height = (fs * s * 1.4) + 'px';
+
+  if (editor.pending.type === 'cover') {
+    inp.style.maxWidth = (editor.pending.w * s) + 'px';
+  } else {
+    inp.style.maxWidth = ($('ed-ov').width - pdfX * s - 10) + 'px';
+  }
+
+  inp.value = '';
+  inp.placeholder = editor.pending.type === 'cover' ? 'Reemplazo (o vacío)...' : 'Escribe aquí...';
+  el.classList.add('active');
+  requestAnimationFrame(() => inp.focus());
+}
+
+function edInlineConfirm() {
+  if (!editor.pending) return;
+  const text = $('ed-inline-input').value;
+  if (editor.pending.type === 'text' && !text.trim()) { edInlineCancel(); return; }
+
+  editor.pending.text = text;
+  editor.edits.push(editor.pending);
+  editor.pending = null;
+  $('ed-inline').classList.remove('active');
+  markDirty(); // FIX #3
+  edDrawOverlay();
+  edUpdateEditsList();
+}
+
+function edInlineCancel() {
+  editor.pending = null;
+  $('ed-inline').classList.remove('active');
+  $('ed-inline-input').value = '';
+  edDrawOverlay();
+}
+
+function edInitInlineEvents() {
+  const inp = $('ed-inline-input');
+
+  inp.addEventListener('input', () => {
+    if (editor.pending) {
+      editor.pending.text = inp.value;
+      edDrawOverlay();
+    }
+  });
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); edInlineConfirm(); }
+    if (e.key === 'Escape') { e.preventDefault(); edInlineCancel(); }
+  });
+
+  $('ed-inline').addEventListener('mousedown', e => e.stopPropagation());
+
+  $('ed-fontsize').addEventListener('input', () => {
+    if (editor.pending) {
+      const fs = parseInt($('ed-fontsize').value) || 12;
+      editor.pending.fontSize = fs;
+      const s = editor.scale;
+      inp.style.fontSize = (fs * s) + 'px';
+      inp.style.lineHeight = (fs * s * 1.2) + 'px';
+      inp.style.height = (fs * s * 1.4) + 'px';
+      edDrawOverlay();
+    }
+  });
+}
+
+// ── Edit list — FIX #1: XSS-safe rendering ──
+function edUpdateEditsList() {
+  const container = $('ed-edits-list');
+  const count = editor.edits.length;
+  $('ed-count').textContent = `(${count})`;
+  $('ed-undo-btn').style.display = count > 0 ? '' : 'none';
+
+  if (!count) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--warm-300);text-align:center;padding:8px 0">Aún sin ediciones</p>';
+    return;
+  }
+
+  container.innerHTML = editor.edits.map((ed, i) =>
+    `<div class="edit-item">
+      <div class="edit-item-header">
+        <span class="edit-item-type">${ed.type === 'cover' ? '🔲 Tapar' : '📝 Texto'} · pág ${ed.page}</span>
+        <button class="btn-icon" onclick="edRemoveEdit(${i})" title="Eliminar">✕</button>
+      </div>
+      <div class="edit-item-value">${esc(ed.text) || '(solo tapado)'}</div>
+    </div>`
+  ).join('');
+}
+
+function edRemoveEdit(i) {
+  editor.edits.splice(i, 1);
+  markDirty();
+  edDrawOverlay();
+  edUpdateEditsList();
+}
+
+function edUndo() {
+  if (editor.edits.length > 0) {
+    editor.edits.pop();
+    markDirty();
+    edDrawOverlay();
+    edUpdateEditsList();
+    toast('Edición deshecha');
+  }
+}
+
+function edSetTool(tool) {
+  editor.tool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('on', b.dataset.t === tool));
+  $('ed-ov').style.cursor = tool === 'cover' ? 'crosshair' : 'text';
+  $('ed-hint').textContent = tool === 'cover'
+    ? '🔲 Arrastra un rectángulo sobre el texto que quieras tapar'
+    : '📝 Haz clic donde quieras insertar texto';
+}
+
+function edPage(delta) {
+  const next = editor.page + delta;
+  if (next >= 1 && next <= editor.totalPages) { editor.page = next; edRenderPage(); }
+}
+
+// ── Form fields ──
+async function edDetectForms() {
+  const panel = $('ed-forms-panel'), list = $('ed-forms-list');
+  try {
+    const form = editor.libDoc.getForm();
+    const fields = form.getFields();
+    if (!fields.length) { panel.style.display = 'none'; return; }
+    panel.style.display = 'block';
+    editor.formFields = fields;
+    list.innerHTML = fields.map((f, i) => {
+      const name = esc(f.getName()), type = f.constructor.name; // FIX #1
+      let inputHTML = '';
+      if (type === 'PDFTextField') {
+        const val = esc(f.getText() || '');
+        inputHTML = `<input class="inp" value="${val}" onchange="edFormUpdate(${i},this.value)" style="font-size:12px;padding:5px 8px">`;
+      } else if (type === 'PDFCheckBox') {
+        inputHTML = `<label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <input type="checkbox" ${f.isChecked() ? 'checked' : ''} onchange="edFormCheck(${i},this.checked)"> Marcado</label>`;
+      } else {
+        inputHTML = `<span style="font-size:11px;color:var(--warm-300)">${esc(type)}</span>`;
+      }
+      return `<div class="form-field"><label>${name}</label>${inputHTML}</div>`;
+    }).join('');
+  } catch (err) {
+    panel.style.display = 'none';
+    // Not a form PDF — this is normal, not an error
+  }
+}
+
+function edFormUpdate(i, val) {
+  try { editor.formFields[i].setText(val); markDirty(); }
+  catch (err) { toast('Error al actualizar campo: ' + err.message, false); }
+}
+function edFormCheck(i, checked) {
+  try { checked ? editor.formFields[i].check() : editor.formFields[i].uncheck(); markDirty(); }
+  catch (err) { toast('Error al actualizar campo: ' + err.message, false); }
+}
+
+// ── Save — FIX #4: Double-click protected via guardBtn ──
+async function _edSave() {
+  if (!editor.buf) return;
+  const doc = await PDFLib.PDFDocument.load(editor.buf.slice(0), { ignoreEncryption: true });
+  const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+  // Form fields
+  try {
+    const form = doc.getForm();
+    editor.formFields.forEach(f => {
+      try {
+        const name = f.getName(), type = f.constructor.name;
+        const nf = form.getField(name);
+        if (type === 'PDFTextField') nf.setText(f.getText());
+        else if (type === 'PDFCheckBox') { f.isChecked() ? nf.check() : nf.uncheck(); }
+      } catch { /* field may not exist in fresh copy */ }
+    });
+  } catch { /* no form */ }
+
+  // Overlay edits
+  editor.edits.forEach(ed => {
+    const page = doc.getPage(ed.page - 1);
+    const ph = page.getHeight();
+    if (ed.type === 'cover') {
+      const py = ph - ed.y - ed.h;
+      page.drawRectangle({ x: ed.x, y: py, width: ed.w, height: ed.h, color: PDFLib.rgb(1, 1, 1), borderWidth: 0 });
+      if (ed.text) page.drawText(ed.text, { x: ed.x + 3, y: py + ed.h - ed.fontSize - 3, size: ed.fontSize, font, color: PDFLib.rgb(0, 0, 0) });
+    } else {
+      page.drawText(ed.text, { x: ed.x, y: ph - ed.y - ed.fontSize, size: ed.fontSize, font, color: PDFLib.rgb(0, 0, 0) });
+    }
+  });
+
+  const bytes = await doc.save();
+  download(new Blob([bytes], { type: 'application/pdf' }), editor.file.name.replace(/\.pdf$/i, '_editado.pdf'));
+  markClean(); // FIX #3
+  toast('PDF guardado · ' + fmtSize(bytes.length));
+}
+const edSave = guardBtn('btn-ed-save', _edSave);
+
+// ── Close — FIX #6: Memory cleanup ──
+function edClose() {
+  if (editor.edits.length > 0 && !confirm('Tienes ediciones sin guardar. ¿Cerrar de todas formas?')) return;
+  edInlineCancel();
+  if (editor.jsDoc) { editor.jsDoc.destroy(); } // FIX #6
+  editor.file = null; editor.buf = null; editor.jsDoc = null;
+  editor.libDoc = null; editor.edits = []; editor.formFields = [];
+  markClean();
+  $('ed-drop').style.display = 'block';
+  $('ed-work').style.display = 'none';
+}
+
+
+// ══════════════════════════════════════
+// MERGE — with cached page counts
+// ══════════════════════════════════════
+const merge = { files: [], pageCache: new WeakMap() };
+
+function mgAddFiles(files) {
+  files.forEach(f => merge.files.push(f));
+  mgRender();
+}
+
+async function mgGetPageCount(file) {
+  if (merge.pageCache.has(file)) return merge.pageCache.get(file);
+  try {
+    const buf = await readFile(file);
+    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    const count = doc.numPages;
+    doc.destroy();
+    merge.pageCache.set(file, count);
+    return count;
+  } catch { return '?'; }
+}
+
+async function mgRender() {
+  const list = $('mg-list'), bar = $('mg-bar');
+  if (!merge.files.length) { list.innerHTML = ''; bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  $('mg-count').textContent = merge.files.length;
+
+  let html = '';
+  for (let i = 0; i < merge.files.length; i++) {
+    const f = merge.files[i];
+    const pages = await mgGetPageCount(f);
+    html += `
+      <div class="fitem" draggable="true" ondragstart="mgDragStart(event,${i})" ondragover="event.preventDefault()" ondrop="mgDrop(event,${i})">
+        <div class="fitem-icon">📄</div>
+        <div class="fitem-body">
+          <div class="fitem-name">${esc(f.name)}</div>
+          <div class="fitem-meta"><span>${fmtSize(f.size)}</span><span>${pages} pág</span></div>
+        </div>
+        <div class="fitem-actions">
+          <button class="btn-sq" onclick="mgMove(${i},-1)" ${i === 0 ? 'disabled' : ''} title="Subir">▲</button>
+          <button class="btn-sq" onclick="mgMove(${i},1)" ${i === merge.files.length - 1 ? 'disabled' : ''} title="Bajar">▼</button>
+          <button class="btn-icon" onclick="mgRemove(${i})" title="Eliminar">✕</button>
+        </div>
+      </div>`;
+  }
+  list.innerHTML = html;
+}
+
+let _mgDragIdx = null;
+function mgDragStart(e, i) { _mgDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+function mgDrop(e, targetIdx) {
+  e.preventDefault();
+  if (_mgDragIdx === null || _mgDragIdx === targetIdx) return;
+  const item = merge.files.splice(_mgDragIdx, 1)[0];
+  merge.files.splice(targetIdx, 0, item);
+  _mgDragIdx = null;
+  mgRender();
+}
+function mgMove(i, dir) {
+  const n = i + dir;
+  if (n < 0 || n >= merge.files.length) return;
+  [merge.files[i], merge.files[n]] = [merge.files[n], merge.files[i]];
+  mgRender();
+}
+function mgRemove(i) { merge.files.splice(i, 1); mgRender(); }
+function mgClear() { merge.files = []; mgRender(); }
+
+// FIX #4: Double-click protected
+async function _mgMerge() {
+  if (merge.files.length < 2) { toast('Mínimo 2 archivos', false); return; }
+  const prog = $('mg-progress'), fill = $('mg-prog-fill'), label = $('mg-prog-label');
+  prog.style.display = 'block'; fill.style.width = '0%';
+
+  try {
+    const merged = await PDFLib.PDFDocument.create();
+    for (let i = 0; i < merge.files.length; i++) {
+      label.textContent = `${esc(merge.files[i].name)} (${i + 1}/${merge.files.length})`;
+      fill.style.width = ((i + 1) / merge.files.length * 80) + '%';
+      const buf = await readFile(merge.files[i]);
+      const doc = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+      const pages = await merged.copyPages(doc, doc.getPageIndices());
+      pages.forEach(p => merged.addPage(p));
+    }
+    fill.style.width = '95%'; label.textContent = 'Generando archivo...';
+    const bytes = await merged.save();
+    fill.style.width = '100%'; label.textContent = '¡Completado!';
+    download(new Blob([bytes], { type: 'application/pdf' }), 'documento_unido.pdf');
+    toast('PDF unido · ' + fmtSize(bytes.length));
+    setTimeout(() => prog.style.display = 'none', 2000);
+  } catch (err) {
+    toast('Error al unir: ' + err.message, false);
+    prog.style.display = 'none';
+  }
+}
+const mgMerge = guardBtn('btn-mg-merge', _mgMerge);
+
+
+// ══════════════════════════════════════
+// SPLIT — "each page" now creates ZIP
+// ══════════════════════════════════════
+const split = { file: null, buf: null, totalPages: 0, mode: 'pages', selected: new Set() };
+
+async function spLoad(files) {
+  const file = files[0];
+  try {
+    const buf = await readFile(file);
+    const doc = await PDFLib.PDFDocument.load(buf.slice(0), { ignoreEncryption: true });
+    split.file = file; split.buf = buf;
+    split.totalPages = doc.getPageCount();
+    split.selected.clear();
+
+    $('sp-file-info').style.display = 'block';
+    $('sp-file-info').innerHTML = `
+      <div class="fitem" style="margin-top:12px">
+        <div class="fitem-icon">📄</div>
+        <div class="fitem-body">
+          <div class="fitem-name">${esc(file.name)}</div>
+          <div class="fitem-meta"><span>${fmtSize(file.size)}</span><span>${split.totalPages} páginas</span></div>
+        </div>
+        <button class="btn-icon" onclick="spClear()">✕</button>
+      </div>`;
+    $('sp-config').style.display = 'block';
+    $('sp-to').max = split.totalPages; $('sp-to').value = split.totalPages;
+    $('sp-from').max = split.totalPages;
+    spRenderGrid();
+  } catch (err) {
+    toast('Error: ' + err.message, false);
+  }
+}
+
+function spRenderGrid() {
+  let html = '';
+  for (let i = 1; i <= split.totalPages; i++) {
+    html += `<div class="page-chip ${split.selected.has(i) ? 'sel' : ''}" onclick="spToggle(${i})" data-p="${i}">${i}</div>`;
+  }
+  $('sp-grid').innerHTML = html;
+}
+
+function spToggle(n) {
+  split.selected.has(n) ? split.selected.delete(n) : split.selected.add(n);
+  const chip = document.querySelector(`.page-chip[data-p="${n}"]`);
+  if (chip) chip.classList.toggle('sel');
+}
+
+function spSelectAll() { for (let i = 1; i <= split.totalPages; i++) split.selected.add(i); spRenderGrid(); }
+function spSelectNone() { split.selected.clear(); spRenderGrid(); }
+function spSelectInvert() { for (let i = 1; i <= split.totalPages; i++) { split.selected.has(i) ? split.selected.delete(i) : split.selected.add(i); } spRenderGrid(); }
+
+function spSetMode(mode) {
+  split.mode = mode;
+  document.querySelectorAll('.split-mode').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+  $('sp-pages-ui').style.display = mode === 'pages' ? 'block' : 'none';
+  $('sp-range-ui').style.display = mode === 'range' ? 'block' : 'none';
+  $('sp-each-ui').style.display = mode === 'each' ? 'block' : 'none';
+}
+
+function spClear() {
+  split.file = null; split.buf = null;
+  $('sp-file-info').style.display = 'none';
+  $('sp-config').style.display = 'none';
+}
+
+// FIX #4: Double-click protected
+async function _spSplit() {
+  if (!split.buf) { toast('Selecciona un PDF', false); return; }
+  const prog = $('sp-progress'), fill = $('sp-prog-fill'), label = $('sp-prog-label');
+  prog.style.display = 'block'; fill.style.width = '0%';
+
+  try {
+    const src = await PDFLib.PDFDocument.load(split.buf.slice(0), { ignoreEncryption: true });
+    const baseName = split.file.name.replace(/\.pdf$/i, '');
+
+    if (split.mode === 'each') {
+      // ZIP instead of N individual downloads
+      const zip = new JSZip();
+      for (let i = 0; i < split.totalPages; i++) {
+        label.textContent = `Página ${i + 1} / ${split.totalPages}`;
+        fill.style.width = ((i + 1) / split.totalPages * 90) + '%';
+        const newDoc = await PDFLib.PDFDocument.create();
+        const [page] = await newDoc.copyPages(src, [i]);
+        newDoc.addPage(page);
+        zip.file(`${baseName}_pag${i + 1}.pdf`, await newDoc.save());
+      }
+      fill.style.width = '95%'; label.textContent = 'Generando ZIP...';
+      const blob = await zip.generateAsync({ type: 'blob' });
+      download(blob, `${baseName}_paginas.zip`);
+      toast(`${split.totalPages} páginas en ZIP`);
+    } else {
+      let indices = [];
+      if (split.mode === 'pages') {
+        indices = Array.from(split.selected).sort((a, b) => a - b).map(p => p - 1);
+        if (!indices.length) { toast('Selecciona al menos una página', false); prog.style.display = 'none'; return; }
+      } else {
+        const from = parseInt($('sp-from').value), to = parseInt($('sp-to').value);
+        if (from > to || from < 1 || to > split.totalPages) { toast('Rango inválido', false); prog.style.display = 'none'; return; }
+        for (let i = from - 1; i < to; i++) indices.push(i);
+      }
+      label.textContent = `Extrayendo ${indices.length} páginas...`;
+      fill.style.width = '50%';
+      const newDoc = await PDFLib.PDFDocument.create();
+      const pages = await newDoc.copyPages(src, indices);
+      pages.forEach(p => newDoc.addPage(p));
+      const bytes = await newDoc.save();
+      fill.style.width = '100%';
+      download(new Blob([bytes], { type: 'application/pdf' }), `${baseName}_extracto.pdf`);
+      toast('PDF dividido · ' + fmtSize(bytes.length));
+    }
+    label.textContent = '¡Completado!';
+    setTimeout(() => prog.style.display = 'none', 2000);
+  } catch (err) {
+    toast('Error: ' + err.message, false);
+    prog.style.display = 'none';
+  }
+}
+const spSplit = guardBtn('btn-sp-split', _spSplit);
+
+
+// ══════════════════════════════════════
+// RENAME — FIX #1: XSS-safe
+// ══════════════════════════════════════
+const rename = { files: [] };
+
+function rnAddFiles(files) {
+  files.forEach(f => rename.files.push({ file: f, newName: f.name.replace(/\.pdf$/i, '') }));
+  rnRender();
+}
+
+function rnRender() {
+  const list = $('rn-list'), bar = $('rn-bar');
+  if (!rename.files.length) { list.style.display = 'none'; bar.style.display = 'none'; return; }
+  list.style.display = 'block'; bar.style.display = 'flex';
+  $('rn-count').textContent = rename.files.length;
+
+  list.innerHTML = rename.files.map((item, i) =>
+    `<div class="rename-item">
+      <div class="fitem-icon" style="width:28px;height:28px;font-size:12px;border-radius:6px">📄</div>
+      <div class="rename-wrap">
+        <div class="rename-orig">${esc(item.file.name)} · ${fmtSize(item.file.size)}</div>
+        <div class="rename-row">
+          <input class="inp" value="${esc(item.newName)}" oninput="rename.files[${i}].newName=this.value" style="font-size:13px">
+          <span class="rename-ext">.pdf</span>
+        </div>
+      </div>
+      <button class="btn-icon" onclick="rename.files.splice(${i},1);rnRender()">✕</button>
+    </div>`
+  ).join('');
+}
+
+function rnClear() { rename.files = []; rnRender(); }
+
+function rnDownload() {
+  if (!rename.files.length) return;
+  if (rename.files.length === 1) {
+    download(rename.files[0].file, (rename.files[0].newName.trim() || 'sin_nombre') + '.pdf');
+    toast('Descargado');
+    return;
+  }
+  const zip = new JSZip();
+  rename.files.forEach(item => {
+    zip.file((item.newName.trim() || 'sin_nombre') + '.pdf', item.file);
+  });
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    download(blob, 'renombrados.zip');
+    toast(rename.files.length + ' archivos descargados como ZIP');
+  });
+}
+
+
+// ══════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && editor.pending) { edInlineCancel(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if ($('ed-work').style.display !== 'none' && !editor.pending
+        && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      edUndo();
+    }
+  }
+});
+
+
+// ══════════════════════════════════════
+// INITIALIZATION
+// ══════════════════════════════════════
+setupDropZone('ed-drop', 'ed-inp', edLoad, false);
+setupDropZone('mg-drop', 'mg-inp', mgAddFiles, true);
+setupDropZone('sp-drop', 'sp-inp', spLoad, false);
+setupDropZone('rn-drop', 'rn-inp', rnAddFiles, true);
+edInitCanvasEvents();
+edInitInlineEvents();
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => { if (editor.jsDoc) edRenderPage(); }, 200);
+});
+</script>
+</body>
+</html>
