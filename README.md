@@ -11,7 +11,7 @@
 
 ## Usage
 
-Open `pdf-toolkit-v6.html` in any modern browser. No install, no server, no dependencies to manage.
+Open `index.html` in any modern browser. No install, no server, no dependencies to manage.
 
 ## Security
 
@@ -38,7 +38,7 @@ Single HTML file (~1,400 lines). Built with [pdf-lib](https://pdf-lib.js.org/), 
 
 ## Uso
 
-Abre `pdf-toolkit-v6.html` en cualquier navegador moderno. Sin instalación, sin servidor, sin dependencias.
+Abre `index.html` en cualquier navegador moderno. Sin instalación, sin servidor, sin dependencias.
 
 ## Seguridad
 
